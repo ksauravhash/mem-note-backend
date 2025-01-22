@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import 'dotenv/config'
 import { connectDB } from "./db";
+import userRouter from "./routes/user";
 
 const app = express();
 
@@ -13,7 +14,9 @@ const port = process.env.PORT;
 
 connectDB();
 
-app.get("/", (req: Request, res: Response) => {
+app.use('/user',userRouter);
+
+app.get("/test", (req: Request, res: Response) => {
   res.json({ success: 200 });
 });
 

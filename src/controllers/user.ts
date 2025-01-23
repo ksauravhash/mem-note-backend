@@ -63,7 +63,7 @@ export const login = async (req: Request, res: Response) => {
           };
           const accessToken = generateAccessToken(payload);
           const refreshToken = generateRefreshToken(payload);
-          res.json({ ...payload, accessToken, refreshToken });
+          res.json({ payload, accessToken, refreshToken });
         } else {
           res.status(401).json({ error: "Invalid password" });
         }
@@ -100,7 +100,7 @@ export const refreshToken = async (req: Request, res: Response) => {
         name: user?.name,
       };
       const accessToken = generateAccessToken(payload);
-      res.json({ ...payload, accessToken, refToken });
+      res.json({ payload, accessToken, refToken });
     } catch (err) {
       res.sendStatus(403);
     }

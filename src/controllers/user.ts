@@ -10,9 +10,9 @@ import {
 
 const registerDataSchema = z.object({
   username: z.string(),
-  email: z.string(),
+  email: z.string().email(),
   name: z.string(),
-  password: z.string(),
+  password: z.string().min(8),
 });
 
 export const register = async (req: Request, res: Response) => {

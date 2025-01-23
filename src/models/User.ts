@@ -15,10 +15,19 @@ const UserSchema = new Schema<IUser>({
   username: {
     required: true,
     type: String,
+    unique: true,
   },
   email: {
     required: true,
     type: String,
+    unique: true,
+    trim: true,
+    validate: {
+      validator: function (v) {
+        return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(v);
+      },
+      message: "Please enter a valid email",
+    },
   },
   password: {
     required: true,
@@ -26,6 +35,6 @@ const UserSchema = new Schema<IUser>({
   },
 });
 
-const User:Model<IUser> = model('User', UserSchema);
+const User: Model<IUser> = model("User", UserSchema);
 
 export default User;

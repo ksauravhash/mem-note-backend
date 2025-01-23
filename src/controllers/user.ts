@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import User from "../models/User";
-import { argon2d, hash, verify } from "argon2";
+import { hash, verify } from "argon2";
 import jwt from "jsonwebtoken";
 
 const jwtKey = process.env.JWT_KEY;
@@ -27,6 +27,7 @@ export const register = async (req: Request, res: Response) => {
       res.status(400).json(dataValidationOb.error);
     }
   } catch (err) {
+    res.status(500).send();
     console.error(
       `${new Date().toTimeString()} ${new Date().toDateString()}`,
       err
@@ -55,7 +56,6 @@ export const login = async (req: Request, res: Response) => {
         if (validPassword) {
           const accessToken = jwt.sign(
             { username: dataValidationOb.data.username },
-            //@ts-ignore
             jwtKey
           );
           res.json({ accessToken: accessToken });
@@ -69,6 +69,21 @@ export const login = async (req: Request, res: Response) => {
       res.status(400).json(dataValidationOb.error);
     }
   } catch (err) {
+    res.status(500).send();
+    console.error(
+      `${new Date().toTimeString()} ${new Date().toDateString()}`,
+      err
+    );
+  }
+};
+
+export const refreshToken = (req: Request, res: Response) => {
+  try {
+    const refToken = req.cookies.refreshToken;
+    if (!refToken) return res.sendStatus(403);
+    // jwt.verify(refToken, );
+  } catch (err) {
+    res.status(500).send();
     console.error(
       `${new Date().toTimeString()} ${new Date().toDateString()}`,
       err

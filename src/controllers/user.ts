@@ -2,9 +2,11 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import User from "../models/User";
 import { hash, verify } from "argon2";
-import jwt from "jsonwebtoken";
-
-const jwtKey = process.env.JWT_KEY;
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../utility/auth";
 
 const registerDataSchema = z.object({
   username: z.string(),
@@ -54,11 +56,14 @@ export const login = async (req: Request, res: Response) => {
           dataValidationOb.data.password
         );
         if (validPassword) {
-          const accessToken = jwt.sign(
-            { username: dataValidationOb.data.username },
-            jwtKey
-          );
-          res.json({ accessToken: accessToken });
+          const payload = {
+            id: user?._id,
+            username: user?.username,
+            name: user?.name,
+          };
+          const accessToken = generateAccessToken(payload);
+          const refreshToken = generateRefreshToken(payload);
+          res.json({ ...payload, accessToken, refreshToken });
         } else {
           res.status(401).json({ error: "Invalid password" });
         }
@@ -77,11 +82,28 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const refreshToken = (req: Request, res: Response) => {
+export const refreshToken = async (req: Request, res: Response) => {
   try {
-    const refToken = req.cookies.refreshToken;
-    if (!refToken) return res.sendStatus(403);
-    // jwt.verify(refToken, );
+    const authHeader = req.headers["authorization"];
+    const refToken = authHeader && authHeader.split(" ")[1];
+    if (!refToken) {
+      res.sendStatus(403);
+      return;
+    }
+    try {
+      const ob = verifyRefreshToken(refToken);
+      // @ts-ignore
+      const user = await User.findById(ob.id);
+      const payload = {
+        id: user?._id,
+        username: user?.username,
+        name: user?.name,
+      };
+      const accessToken = generateAccessToken(payload);
+      res.json({ ...payload, accessToken, refToken });
+    } catch (err) {
+      res.sendStatus(403);
+    }
   } catch (err) {
     res.status(500).send();
     console.error(

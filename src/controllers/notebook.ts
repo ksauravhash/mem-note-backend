@@ -12,7 +12,7 @@ export const create = async (req: Request, res: Response) => {
     const dataValidationOb = notebookDataSchema.safeParse(data);
     if (dataValidationOb.success) {
       const notebookData = dataValidationOb.data;
-      const notebook = await Notebook.create({title: notebookData.title})
+      const notebook = await Notebook.create({title: notebookData.title, user: req.user?.id})
       await notebook.save();
       res.sendStatus(200);
     } else {

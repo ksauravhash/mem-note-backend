@@ -1,4 +1,5 @@
-import { Document, Model, Schema, Types, model } from "mongoose";
+import mongoose, { Document, Model, Schema, Types, model } from "mongoose";
+import { types } from "util";
 
 type NoteType = "word" | "image" | "audio";
 
@@ -11,6 +12,7 @@ interface INote extends Document {
 interface INotebook extends Document {
   title: string;
   notes: INote[];
+  user: Types.ObjectId;
 }
 
 const NoteSchema = new Schema<INote>({
@@ -25,8 +27,8 @@ const NoteSchema = new Schema<INote>({
   },
   sequenceNumber: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const NoteBookSchema = new Schema<INotebook>({
@@ -34,9 +36,14 @@ const NoteBookSchema = new Schema<INotebook>({
     type: String,
     required: true,
   },
-  notes: Types.DocumentArray<INote>,
+  notes: [NoteSchema],
+  user: {
+    type: Schema.ObjectId,
+    required: true,
+    ref: 'User'
+  },
 });
 
-const Notebook:Model<INotebook> = model('Notebook', NoteBookSchema);
+const Notebook: Model<INotebook> = model("Notebook", NoteBookSchema);
 
 export default Notebook;

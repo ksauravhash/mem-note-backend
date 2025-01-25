@@ -4,7 +4,8 @@ import { create } from "../controllers/notebook";
 
 const notebookRouter = Router();
 
-
 notebookRouter.use(protectedRoute);
 
 notebookRouter.post('/create', create);
+
+export default notebookRouter;

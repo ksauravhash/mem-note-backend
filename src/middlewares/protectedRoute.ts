@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { verifyAccessToken } from "../utility/auth";
-import { JwtPayload } from "jsonwebtoken";
 
-const protectedRoute = (req: Request, res: Response, next: NextFunction) => {
+export const protectedRoute = (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers["authorization"];
     const authToken = authHeader && authHeader.split(" ")[1];

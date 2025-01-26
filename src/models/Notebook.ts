@@ -1,5 +1,4 @@
 import mongoose, { Document, Model, Schema, Types, model } from "mongoose";
-import { types } from "util";
 
 type NoteType = "word" | "image" | "audio";
 
@@ -45,5 +44,7 @@ const NoteBookSchema = new Schema<INotebook>({
 });
 
 const Notebook: Model<INotebook> = model("Notebook", NoteBookSchema);
+
+export const Note: Model<INote> = model("Note", NoteSchema);
 
 export default Notebook;

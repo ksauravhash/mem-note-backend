@@ -45,13 +45,19 @@ export const getRecentNotebooks = async (req: Request, res: Response) => {
       const notebooks = await Notebook.find({
         _id: { $in: notebookIds },
       }).lean();
-
-      res.json(
-        notebooks.map((item) => ({
-          title: item.title,
-          id: item._id,
-        }))
+      const sortedResults = notebookIds.map((id) =>
+        notebooks.find((notebook) => notebook._id.toString() === id)
       );
+      if (sortedResults) {
+        const result = sortedResults.map((item) => ({
+          title: item?.title,
+          id: item?._id,
+        }));
+        res.json(
+          result
+        );
+      } else res.json([]);
+
     }
   } catch (err) {
     res.status(500).send();

@@ -3,6 +3,7 @@ import { z } from "zod";
 import Notebook from "../models/Notebook";
 import RecentNotebook from "../models/RecentNotebooks";
 import { Types } from "mongoose";
+import mongoose from "mongoose";
 
 const notebookDataSchema = z.object({
   title: z.string().nonempty(),
@@ -82,6 +83,7 @@ export const getNotebook = async (req: Request, res: Response) => {
         user: req.user?.id,
         _id: notebookID,
       });
+      // For adding the found notebook to the recent notebook collection
       let recent = await RecentNotebook.find({ user: req.user?.id });
       if (recent.length == 0) {
         const recNB = await RecentNotebook.create({ user: req.user?.id });
@@ -92,18 +94,30 @@ export const getNotebook = async (req: Request, res: Response) => {
         });
         await recNB.save();
       } else {
-        recent[0].notebooks.push({
-          id: new Types.ObjectId(notebookID),
-          lastAccessed: new Date(),
-        });
-        await recent[0].save();
+        const prevAccessedNb = recent[0].notebooks.filter(nb => nb.id == notebook?.id)
+        if (prevAccessedNb.length > 0) {
+          await RecentNotebook.updateOne({
+            _id: recent[0]._id,
+            "notebooks.id": prevAccessedNb[0].id
+          }, { $set: { "notebooks.$.lastAccessed": new Date() } })
+        } else {
+
+          recent[0].notebooks.push({
+            id: new Types.ObjectId(notebookID),
+            lastAccessed: new Date(),
+          });
+          await recent[0].save();
+        }
       }
       res.json({ notebook });
-      // res.sendStatus(200);
     } else {
       res.status(400).json(dataValidationOb.error);
     }
   } catch (err) {
+    if (err instanceof mongoose.Error.CastError) {
+      res.sendStatus(400);
+      return;
+    }
     res.status(500).send();
     console.error(
       `${new Date().toTimeString()} ${new Date().toDateString()}`,

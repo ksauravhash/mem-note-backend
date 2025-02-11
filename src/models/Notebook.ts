@@ -5,6 +5,7 @@ interface INotebook extends Document {
   title: string;
   notes: INote[];
   user: Types.ObjectId;
+  streak: number;
 }
 
 const NoteBookSchema = new Schema<INotebook>({
@@ -18,6 +19,10 @@ const NoteBookSchema = new Schema<INotebook>({
     required: true,
     ref: 'User'
   },
+  streak: {
+    type: Number,
+    deafult: 0
+  }
 });
 
 const Notebook: Model<INotebook> = model("Notebook", NoteBookSchema);

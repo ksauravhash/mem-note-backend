@@ -4,6 +4,7 @@ import 'dotenv/config'
 import { connectDB } from "./db";
 import userRouter from "./routes/user";
 import notebookRouter from "./routes/notebook";
+import noteRouter from "./routes/note";
 
 const app = express();
 
@@ -18,6 +19,8 @@ connectDB();
 app.use('/user',userRouter);
 
 app.use('/notebook', notebookRouter);
+
+app.use('/note', noteRouter);
 
 app.get("/test", (req: Request, res: Response) => {
   res.json({ success: 200 });

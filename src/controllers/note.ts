@@ -142,6 +142,7 @@ export const iterateNote = async (req: Request, res: Response) => {
                     }
                     if (note.easeFactor < 1.3)
                         note.easeFactor = 1.3;
+                    note.previouslyUsed = true;
                     note.usedDate = new Date();
                     await note.save();
                     await notebook.save();

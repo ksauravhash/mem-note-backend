@@ -10,7 +10,11 @@ const app = express();
 
 app.use(express.json());
 
-app.use(cors());
+const frontend_urls = process.env.FRONTEND_URLS.split(" ");
+
+app.use(cors({
+  origin: frontend_urls
+}));
 
 const port = process.env.PORT;
 

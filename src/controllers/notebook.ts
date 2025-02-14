@@ -59,6 +59,9 @@ export const getRecentNotebooks = async (req: Request, res: Response) => {
         );
       } else res.json([]);
 
+    }else {
+      await RecentNotebook.create({user: req.user?.id});
+      res.json([]);
     }
   } catch (err) {
     res.status(500).send();

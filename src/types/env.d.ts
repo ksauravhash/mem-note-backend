@@ -8,5 +8,6 @@ declare namespace NodeJS {
     JWT_KEY: string;
     ACCESS_TOKEN_SECRET: string;
     REFRESH_TOKEN_SECRET: string;
+    FRONTEND_URLS: string;
   }
 }

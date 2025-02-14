@@ -1,11 +1,12 @@
 import { Document, Model, Schema, Types, model } from "mongoose";
 
-type NoteType = "word" | "image" | "audio";
+type NoteType = "word" | "description" | "image" | "audio"
 
 export interface INoteBlock extends Document {
     type: NoteType;
     content: string;
     sequenceNumber: number;
+    answer: boolean;
 }
 
 export interface INote extends Document {
@@ -14,6 +15,7 @@ export interface INote extends Document {
     repetition: number;
     easeFactor: number;
     interval: number;
+    usedDate: Date;
     previouslyUsed: boolean;
 }
 
@@ -26,7 +28,7 @@ export const NoteSchema = new Schema<INote>({
         type: {
             type: String,
             required: true,
-            enum: ["word", "image", "audio"],
+            enum: ["word", "description", "image", "audio"],
         },
         content: {
             type: String,
@@ -36,6 +38,10 @@ export const NoteSchema = new Schema<INote>({
             type: Number,
             required: true,
         },
+        answer: {
+            type: Boolean,
+            default: false
+        }
     }],
     repetition: {
         type: Number,
@@ -49,6 +55,7 @@ export const NoteSchema = new Schema<INote>({
         type: Number,
         default: 0
     },
+    usedDate: Date,
     previouslyUsed: {
         type: Boolean,
         default: false

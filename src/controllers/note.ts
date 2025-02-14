@@ -145,6 +145,16 @@ export const iterateNote = async (req: Request, res: Response) => {
                     note.previouslyUsed = true;
                     note.usedDate = new Date();
                     await note.save();
+                    const currentDate = new Date();
+                    if (notebook.lastStreak) {
+                        const diffInDays = currentDate.getUTCDate() - notebook.lastStreak.getUTCDate();
+                        if (diffInDays > 1 ||
+                            currentDate.getMonth() !== notebook.lastStreak.getMonth() ||
+                            currentDate.getFullYear() !== notebook.lastStreak.getFullYear() || !notebook.streakStart) {
+                            notebook.streakStart = currentDate;
+                        }
+                    }
+                    notebook.lastStreak = currentDate;
                     await notebook.save();
                     res.sendStatus(200);
                 } else {

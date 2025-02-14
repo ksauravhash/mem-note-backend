@@ -1,11 +1,12 @@
-import { Document, Model, Schema, Types, model } from "mongoose";
+import { Document, Model, Schema, Types, model, now } from "mongoose";
 import { INote, NoteSchema } from "./Note";
 
 interface INotebook extends Document {
   title: string;
   notes: INote[];
   user: Types.ObjectId;
-  streak: number;
+  streakStart: Date;
+  lastStreak: Date;
 }
 
 const NoteBookSchema = new Schema<INotebook>({
@@ -19,10 +20,13 @@ const NoteBookSchema = new Schema<INotebook>({
     required: true,
     ref: 'User'
   },
-  streak: {
-    type: Number,
-    default: 0
+  streakStart: {
+    type: Date,
+  },
+  lastStreak: {
+    type: Date
   }
+
 });
 
 const Notebook: Model<INotebook> = model("Notebook", NoteBookSchema);

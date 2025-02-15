@@ -1,10 +1,12 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import 'dotenv/config'
+import { config } from "dotenv"; 'dotenv'
 import { connectDB } from "./db";
 import userRouter from "./routes/user";
 import notebookRouter from "./routes/notebook";
 import noteRouter from "./routes/note";
+
+config();
 
 const app = express();
 

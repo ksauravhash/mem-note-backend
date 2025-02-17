@@ -9,5 +9,10 @@ declare namespace NodeJS {
     ACCESS_TOKEN_SECRET: string;
     REFRESH_TOKEN_SECRET: string;
     FRONTEND_URLS: string;
+    CLIENT_ID: string;
+    CLIENT_SECRET: string;
+    CLIENT_REFRESH_TOKEN: string;
+    USER_EMAIL: string;
+    REDIRECT_URI: string;
   }
 }

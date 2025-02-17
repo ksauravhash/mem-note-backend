@@ -5,8 +5,11 @@ import { hash, verify } from "argon2";
 import {
   generateAccessToken,
   generateRefreshToken,
+  generateUniqueToken,
   verifyRefreshToken,
+  verifyUniqueToken,
 } from "../utility/auth";
+import { createTransporter } from "../utility/mailer";
 
 const registerDataSchema = z.object({
   username: z.string(),
@@ -112,3 +115,72 @@ export const refreshToken = async (req: Request, res: Response) => {
     );
   }
 };
+
+const generateUserVerificationData = z.object({
+  username: z.string().nonempty(),
+  email: z.string().email(),
+});
+
+export const generateUserVerificationEmail = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+    const dataValidationOb = generateUserVerificationData.safeParse(data);
+    if (dataValidationOb.success) {
+      const userData = dataValidationOb.data;
+      const links = process.env.FRONTEND_URLS.split(' ').
+        map(url => `${url}/verify/${generateUniqueToken(userData)}`)
+        .reduce((a, b) => `${a}\n${b}`)
+      const transporter = await createTransporter();
+      await transporter.sendMail({
+        to: userData.email,
+        text: `Click on the link to verify your account. ${links}`,
+        subject: 'Account Verification'
+      })
+
+      res.json({ success: true });
+    } else {
+      res.status(400).json(dataValidationOb.error);
+    }
+  } catch (err) {
+    res.status(500).send();
+    console.error(
+      `${new Date().toTimeString()} ${new Date().toDateString()}`,
+      err
+    );
+  }
+}
+
+const verifyAccountData = z.object({
+  uniqueToken: z.string().nonempty()
+})
+
+export const verifyAccount = async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+    const dataValidationOb = verifyAccountData.safeParse(data);
+    if (dataValidationOb.success) {
+      const userData = dataValidationOb.data;
+      const userOb = verifyUniqueToken(userData.uniqueToken) as {
+        username: string;
+        email: string;
+      };
+
+      const user = await User.findOne({ email: userOb.email });
+      if (user) {
+        user.verified = true;
+        await user.save();
+        res.sendStatus(200);
+      } else {
+        res.sendStatus(400);
+      }
+    } else {
+      res.status(400).json(dataValidationOb.error);
+    }
+  } catch (err) {
+    res.status(500).send();
+    console.error(
+      `${new Date().toTimeString()} ${new Date().toDateString()}`,
+      err
+    );
+  }
+}

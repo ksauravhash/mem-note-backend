@@ -5,6 +5,7 @@ interface IUser extends Document {
   username: string;
   email: string;
   password: string;
+  verified: boolean;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -33,6 +34,10 @@ const UserSchema = new Schema<IUser>({
     required: true,
     type: String,
   },
+  verified: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const User: Model<IUser> = model("User", UserSchema);

@@ -10,6 +10,7 @@ import {
   verifyUniqueToken,
 } from "../utility/auth";
 import { createTransporter } from "../utility/mailer";
+import { JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken";
 
 const registerDataSchema = z.object({
   username: z.string(),
@@ -177,6 +178,13 @@ export const verifyAccount = async (req: Request, res: Response) => {
       res.status(400).json(dataValidationOb.error);
     }
   } catch (err) {
+    if (
+      err instanceof JsonWebTokenError ||
+      err instanceof TokenExpiredError ||
+      err instanceof NotBeforeError
+    )
+      res.sendStatus(401);
+
     res.status(500).send();
     console.error(
       `${new Date().toTimeString()} ${new Date().toDateString()}`,

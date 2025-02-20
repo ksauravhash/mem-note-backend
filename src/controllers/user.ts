@@ -212,11 +212,12 @@ export const googleLogin = (req: Request, res: Response) => {
 
 export const googleLoginRedirect = async (req: Request, res: Response) => {
   try {
+    const isProduction = process.env.RAILWAY_ENVIRONMENT === "production"
     const oauth2Client = new google.auth.OAuth2(
       {
         clientId: process.env.CLIENT_ID2,
         clientSecret: process.env.CLIENT_SECRET2,
-        redirectUri: `${req.protocol}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
+        redirectUri: `${isProduction?'https': 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
       }
     );
     console.log(req.query);

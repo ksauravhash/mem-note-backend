@@ -196,7 +196,8 @@ export const verifyAccount = async (req: Request, res: Response) => {
 
 export const googleLogin = (req: Request, res: Response) => {
   try {
-    const redirectUrl = `${req.protocol}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
+    const isProduction = process.env.RAILWAY_ENVIRONMENT === "production"
+    const redirectUrl = `${isProduction? 'https': 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
     const authURL = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.CLIENT_ID2}&redirect_uri=${redirectUrl}&response_type=code&scope=email profile&access_type=offline`;
     res.redirect(authURL);
   } catch (err) {

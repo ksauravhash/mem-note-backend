@@ -6,6 +6,9 @@ interface IUser extends Document {
   email: string;
   password: string;
   verified: boolean;
+  oauth: {
+    provider: string;
+  }
 }
 
 const UserSchema = new Schema<IUser>({
@@ -31,12 +34,16 @@ const UserSchema = new Schema<IUser>({
     },
   },
   password: {
-    required: true,
     type: String,
   },
   verified: {
     type: Boolean,
     default: false
+  },
+  oauth: {
+    type: {
+      provider: String
+    }
   }
 });
 

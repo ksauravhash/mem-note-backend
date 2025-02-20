@@ -11,6 +11,7 @@ import {
 } from "../utility/auth";
 import { createTransporter } from "../utility/mailer";
 import { JsonWebTokenError, NotBeforeError, TokenExpiredError } from "jsonwebtoken";
+import { google } from "googleapis";
 
 const registerDataSchema = z.object({
   username: z.string(),
@@ -185,6 +186,87 @@ export const verifyAccount = async (req: Request, res: Response) => {
     )
       res.sendStatus(401);
 
+    res.status(500).send();
+    console.error(
+      `${new Date().toTimeString()} ${new Date().toDateString()}`,
+      err
+    );
+  }
+}
+
+export const googleLogin = (req: Request, res: Response) => {
+  try {
+    const redirectUrl = `${req.protocol}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
+    const authURL = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.CLIENT_ID2}&redirect_uri=${redirectUrl}&response_type=code&scope=email profile&access_type=offline`;
+    res.redirect(authURL);
+  } catch (err) {
+    res.status(500).send();
+    console.error(
+      `${new Date().toTimeString()} ${new Date().toDateString()}`,
+      err
+    );
+  }
+}
+
+
+
+export const googleLoginRedirect = async (req: Request, res: Response) => {
+  try {
+    const oauth2Client = new google.auth.OAuth2(
+      {
+        clientId: process.env.CLIENT_ID2,
+        clientSecret: process.env.CLIENT_SECRET2,
+        redirectUri: `${req.protocol}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
+      }
+    );
+    console.log(req.query);
+    if (req.query.error) {
+      res.redirect(`${process.env.FRONTEND_URLS.split(' ')[0]}/login`);
+    } else {
+      const code = req.query.code as string;
+      const { tokens } = await oauth2Client.getToken(code);
+      oauth2Client.setCredentials(tokens);
+      const userInfo = await oauth2Client.request({
+        url: "https://www.googleapis.com/oauth2/v3/userinfo",
+      });
+      const userData = userInfo.data as {
+        sub: string,
+        name: string,
+        given_name: string,
+        family_name: string,
+        picture: string,
+        email: string,
+        email_verified: boolean;
+      }
+      let user = await User.findOne({ email: userData.email });
+      if (!user) {
+        user = await new User({
+          name: userData.name,
+          email: userData.email,
+          username: userData.email.split('@')[0],
+          oauth: {
+            provider: 'google'
+          }
+        }).save();
+      }
+      else {
+        user.name = userData.name;
+        user.oauth = { provider: 'google' };
+        await user.save();
+      }
+      const payload = {
+        id: user?._id,
+        username: user?.username,
+        name: user?.name,
+      };
+      const accessToken = generateAccessToken(payload);
+      const refreshToken = generateRefreshToken(payload);
+      
+      res.redirect(`${process.env.FRONTEND_URLS.split(' ')[0]}/login?at=${accessToken}&rt=${refreshToken}`);
+
+    }
+
+  } catch (err) {
     res.status(500).send();
     console.error(
       `${new Date().toTimeString()} ${new Date().toDateString()}`,

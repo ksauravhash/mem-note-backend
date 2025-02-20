@@ -14,5 +14,8 @@ declare namespace NodeJS {
     CLIENT_REFRESH_TOKEN: string;
     USER_EMAIL: string;
     REDIRECT_URI: string;
+    CLIENT_ID2: string;
+    CLIENT_SECRET2: string;
+    REDIRECT_LINK_2: string;
   }
 }

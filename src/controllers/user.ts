@@ -26,6 +26,16 @@ export const register = async (req: Request, res: Response) => {
     const dataValidationOb = registerDataSchema.safeParse(data);
     if (dataValidationOb.success) {
       const userData = dataValidationOb.data;
+      const userByUsername = await User.findOne({ username: userData.username });
+      if (userByUsername) {
+        res.status(409).json({ 'type': 'username', 'message': "This username is already registered" });
+        return;
+      }
+      const userByEmail = await User.findOne({ email: userData.email });
+      if (userByEmail) {
+        res.status(409).json({ 'type': 'email', 'message': "This email is already registered" });
+        return;
+      }
       userData.password = await hash(userData.password);
       const user = await User.create(userData);
       await user.save();
@@ -96,8 +106,7 @@ export const refreshToken = async (req: Request, res: Response) => {
       return;
     }
     try {
-      const ob = verifyRefreshToken(refToken);
-      // @ts-ignore
+      const ob = verifyRefreshToken(refToken) as {id: string, username: string, name: string};
       const user = await User.findById(ob.id);
       const payload = {
         id: user?._id,
@@ -129,14 +138,17 @@ export const generateUserVerificationEmail = async (req: Request, res: Response)
     const dataValidationOb = generateUserVerificationData.safeParse(data);
     if (dataValidationOb.success) {
       const userData = dataValidationOb.data;
-      const links = process.env.FRONTEND_URLS.split(' ').
-        map(url => `${url}/verify/${generateUniqueToken(userData)}`)
-        .reduce((a, b) => `${a}\n${b}`)
+      const link = process.env.FRONTEND_URLS.split(' ').
+        map(url => `${url}/verify/${generateUniqueToken(userData)}`)[0]
       const transporter = await createTransporter();
       await transporter.sendMail({
+        from: `MemNote" <${process.env.FROM_EMAIL}>`,
         to: userData.email,
-        text: `Click on the link to verify your account. ${links}`,
-        subject: 'Account Verification'
+        subject: 'MemNote - Verify Your Email',
+        ...( {
+          template: "verify-email",
+          context: { username: userData.username, verificationLink: link },
+        } as any ),
       })
 
       res.json({ success: true });
@@ -197,7 +209,7 @@ export const verifyAccount = async (req: Request, res: Response) => {
 export const googleLogin = (req: Request, res: Response) => {
   try {
     const isProduction = process.env.RAILWAY_ENVIRONMENT === "production"
-    const redirectUrl = `${isProduction? 'https': 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
+    const redirectUrl = `${isProduction ? 'https' : 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
     const authURL = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.CLIENT_ID2}&redirect_uri=${redirectUrl}&response_type=code&scope=email profile&access_type=offline`;
     res.redirect(authURL);
   } catch (err) {
@@ -218,7 +230,7 @@ export const googleLoginRedirect = async (req: Request, res: Response) => {
       {
         clientId: process.env.CLIENT_ID2,
         clientSecret: process.env.CLIENT_SECRET2,
-        redirectUri: `${isProduction?'https': 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
+        redirectUri: `${isProduction ? 'https' : 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
       }
     );
     console.log(req.query);
@@ -263,7 +275,7 @@ export const googleLoginRedirect = async (req: Request, res: Response) => {
       };
       const accessToken = generateAccessToken(payload);
       const refreshToken = generateRefreshToken(payload);
-      
+
       res.redirect(`${process.env.FRONTEND_URLS.split(' ')[0]}/login?at=${accessToken}&rt=${refreshToken}`);
 
     }

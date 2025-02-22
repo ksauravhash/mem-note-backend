@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import "dotenv/config";
 
 const name = process.env.DB_NAME;
 const password = process.env.DB_PASSWORD;

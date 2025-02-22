@@ -1,6 +1,5 @@
 import { google } from 'googleapis';
 import nodemailer from 'nodemailer';
-import hbs from "nodemailer-express-handlebars";
 import path from 'path';
 
 const clientID = process.env.CLIENT_ID;
@@ -45,6 +44,8 @@ export const createTransporter = async () => {
         __dirname,
         "../email-templates"
     );
+    const { default: hbs } = await import('nodemailer-express-handlebars');
+    
     transport.use(
         "compile",
         hbs({

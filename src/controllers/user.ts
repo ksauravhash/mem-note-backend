@@ -138,14 +138,17 @@ export const generateUserVerificationEmail = async (req: Request, res: Response)
     const dataValidationOb = generateUserVerificationData.safeParse(data);
     if (dataValidationOb.success) {
       const userData = dataValidationOb.data;
-      const links = process.env.FRONTEND_URLS.split(' ').
-        map(url => `${url}/verify/${generateUniqueToken(userData)}`)
-        .reduce((a, b) => `${a}\n${b}`)
+      const link = process.env.FRONTEND_URLS.split(' ').
+        map(url => `${url}/verify/${generateUniqueToken(userData)}`)[0]
       const transporter = await createTransporter();
       await transporter.sendMail({
+        from: `MemNote" <${process.env.FROM_EMAIL}>`,
         to: userData.email,
-        text: `Click on the link to verify your account. ${links}`,
-        subject: 'Account Verification'
+        subject: 'MemNote - Verify Your Email',
+        ...( {
+          template: "verify-email",
+          context: { username: userData.username, verificationLink: link },
+        } as any ),
       })
 
       res.json({ success: true });

@@ -17,5 +17,6 @@ declare namespace NodeJS {
     CLIENT_ID2: string;
     CLIENT_SECRET2: string;
     REDIRECT_LINK_2: string;
+    FROM_EMAIL: string;
   }
 }

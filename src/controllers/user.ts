@@ -71,10 +71,12 @@ export const login = async (req: Request, res: Response) => {
           dataValidationOb.data.password
         );
         if (validPassword) {
-          const payload = {
-            id: user?._id,
-            username: user?.username,
-            name: user?.name,
+          const payload: JWTPayloadType &{verified: boolean}  = {
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            email: user.email,
+            verified: user.verified
           };
           const accessToken = generateAccessToken(payload);
           const refreshToken = generateRefreshToken(payload);
@@ -108,13 +110,16 @@ export const refreshToken = async (req: Request, res: Response) => {
     try {
       const ob = verifyRefreshToken(refToken) as {id: string, username: string, name: string};
       const user = await User.findById(ob.id);
-      const payload = {
-        id: user?._id,
-        username: user?.username,
-        name: user?.name,
-      };
-      const accessToken = generateAccessToken(payload);
-      res.json({ user: payload, accessToken, refToken });
+      if(user) {
+        const payload: JWTPayloadType = {
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          email: user.email
+        };
+        const accessToken = generateAccessToken(payload);
+        res.json({ user: payload, accessToken, refToken });
+      }
     } catch (err) {
       res.sendStatus(403);
     }
@@ -233,7 +238,6 @@ export const googleLoginRedirect = async (req: Request, res: Response) => {
         redirectUri: `${isProduction ? 'https' : 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
       }
     );
-    console.log(req.query);
     if (req.query.error) {
       res.redirect(`${process.env.FRONTEND_URLS.split(' ')[0]}/login`);
     } else {
@@ -260,7 +264,8 @@ export const googleLoginRedirect = async (req: Request, res: Response) => {
           username: userData.email.split('@')[0],
           oauth: {
             provider: 'google'
-          }
+          },
+          verified: true
         }).save();
       }
       else {

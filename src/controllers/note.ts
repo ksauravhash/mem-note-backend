@@ -22,12 +22,16 @@ export const create = async (req: Request, res: Response) => {
         if (dataValidationOb.success) {
             const noteData = dataValidationOb.data;
             const notebook = await Notebook.findById(noteData.notebookID);
-            const note = new Note({
+            if (!notebook) {
+                res.sendStatus(400);
+                return;
+            }
+            await Note.create({
                 title: noteData.title,
-                noteBlocks: noteData.noteBlocks
+                noteBlocks: noteData.noteBlocks,
+                noteId: noteData.notebookID,
+                userId: req.user?.id
             });
-            notebook?.notes.push(note);
-            await notebook?.save();
             res.sendStatus(200);
         } else {
             res.status(400).json(dataValidationOb.error);
@@ -47,7 +51,7 @@ export const getUnusedNotes = async (req: Request, res: Response) => {
         if (notebookID) {
             const notebook = await Notebook.findById(notebookID);
             if (notebook) {
-                const nbs = notebook.notes.filter(note => !note.previouslyUsed);
+                const nbs = await Note.find({ previouslyUsed: false, userId: req.user?.id, noteId: notebook.id as string }).limit(10);
                 res.json(nbs);
             } else {
                 res.sendStatus(400);
@@ -75,8 +79,7 @@ export const getTodaysNote = async (req: Request, res: Response) => {
         if (notebookID) {
             const notebook = await Notebook.findById(notebookID);
             if (notebook) {
-
-                const nbs = notebook.notes.filter(note => {
+                const nbs = (await Note.find({ previouslyUsed: false, userId: req.user?.id, noteId: notebook.id as string })).filter(note=> {
                     const now = new Date();
                     if (!note.usedDate)
                         return false;
@@ -87,7 +90,7 @@ export const getTodaysNote = async (req: Request, res: Response) => {
                         now.getUTCMonth() >= nextDate.getUTCMonth() &&
                         now.getUTCDate() >= nextDate.getUTCDate()
                     )
-                });
+                })
                 res.json(nbs);
             } else {
                 res.sendStatus(400);
@@ -123,7 +126,7 @@ export const iterateNote = async (req: Request, res: Response) => {
             const iterateData = dataValidationOb.data;
             const notebook = await Notebook.findById(iterateData.notebookID);
             if (notebook) {
-                const note = notebook.notes.find(note => note.id == iterateData.noteID);
+                const note = await Note.findById(iterateData.noteID)
                 if (note) {
                     // The standard SM-2 algorithm
                     if (iterateData.quality >= 3) {

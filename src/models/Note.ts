@@ -17,6 +17,8 @@ export interface INote extends Document {
     interval: number;
     usedDate: Date;
     previouslyUsed: boolean;
+    noteId: Types.ObjectId;
+    userId: Types.ObjectId;
 }
 
 export const NoteSchema = new Schema<INote>({
@@ -59,6 +61,16 @@ export const NoteSchema = new Schema<INote>({
     previouslyUsed: {
         type: Boolean,
         default: false
+    },
+    noteId: {
+        type: Schema.ObjectId,
+        required: true,
+        ref: 'Notebook'
+    },
+    userId: {
+        type: Schema.ObjectId,
+        required: true,
+        ref: 'User'
     }
 })
 

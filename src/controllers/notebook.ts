@@ -173,7 +173,7 @@ export const getNotbookWithStats = async (req: Request, res: Response) => {
       const notesCount = await Note.countDocuments({userId: req.user?.id, noteId: notebook.id});
       const usedNotesCount = await Note.countDocuments({userId: req.user?.id, noteId: notebook.id, previouslyUsed: true});
 
-      res.json({ notebook, notesLength: notesCount, usedNotesLength: usedNotesCount});
+      res.json({ notebook, notesCount, usedNotesCount});
     } else {
       res.status(400).json(dataValidationOb.error);
     }

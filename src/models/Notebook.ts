@@ -14,7 +14,6 @@ const NoteBookSchema = new Schema<INotebook>({
     type: String,
     required: true,
   },
-  notes: [NoteSchema],
   user: {
     type: Schema.ObjectId,
     required: true,
@@ -26,7 +25,6 @@ const NoteBookSchema = new Schema<INotebook>({
   lastStreak: {
     type: Date
   }
-
 });
 
 const Notebook: Model<INotebook> = model("Notebook", NoteBookSchema);

@@ -60,8 +60,8 @@ export const getRecentNotebooks = async (req: Request, res: Response) => {
         );
       } else res.json([]);
 
-    }else {
-      await RecentNotebook.create({user: req.user?.id});
+    } else {
+      await RecentNotebook.create({ user: req.user?.id });
       res.json([]);
     }
   } catch (err) {
@@ -140,7 +140,7 @@ export const getNotbookWithStats = async (req: Request, res: Response) => {
         user: req.user?.id,
         _id: notebookID,
       });
-      if(!notebook) {
+      if (!notebook) {
         res.status(400);
         return;
       }
@@ -170,10 +170,10 @@ export const getNotbookWithStats = async (req: Request, res: Response) => {
           await recent[0].save();
         }
       }
-      const notesCount = await Note.countDocuments({userId: req.user?.id, noteId: notebook.id});
-      const usedNotesCount = await Note.countDocuments({userId: req.user?.id, noteId: notebook.id, previouslyUsed: true});
+      const notesCount = await Note.countDocuments({ userId: req.user?.id, noteId: notebook.id });
+      const usedNotesCount = await Note.countDocuments({ userId: req.user?.id, noteId: notebook.id, previouslyUsed: true });
 
-      res.json({ notebook, notesCount, usedNotesCount});
+      res.json({ notebook, notesCount, usedNotesCount });
     } else {
       res.status(400).json(dataValidationOb.error);
     }
@@ -189,3 +189,30 @@ export const getNotbookWithStats = async (req: Request, res: Response) => {
     );
   }
 };
+
+export const deleteNotebook = async (req: Request, res: Response) => {
+  try {
+    const notebookId = req.params['notebookId'];
+    if (notebookId) {
+      await Notebook.findByIdAndDelete(notebookId);
+      await Note.deleteMany({ userId: req.user?.id, noteId: notebookId });
+      const recentNotebooks = await RecentNotebook.findOne({ user: req.user?.id });
+      if (recentNotebooks) {
+        const deleteIndex = recentNotebooks.notebooks.findIndex(nb => nb.id.toString() === notebookId);
+        if (deleteIndex != -1) {
+          recentNotebooks.notebooks.splice(deleteIndex, 1);
+          await recentNotebooks.save();
+        }
+      }
+      res.sendStatus(204);
+    } else {
+      res.sendStatus(400);
+    }
+  } catch (err) {
+    res.status(500).send();
+    console.error(
+      `${new Date().toTimeString()} ${new Date().toDateString()}`,
+      err
+    );
+  }
+}

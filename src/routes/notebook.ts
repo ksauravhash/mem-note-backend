@@ -2,6 +2,7 @@ import { Router } from "express";
 import { protectedRoute } from "../middlewares/protectedRoute";
 import {
   create,
+  deleteNotebook,
   getNotbookWithStats,
   getNotebook,
   getRecentNotebooks,
@@ -18,5 +19,7 @@ notebookRouter.get("/getRecentNotebooks", getRecentNotebooks);
 notebookRouter.post("/getNotebook", getNotebook);
 
 notebookRouter.post("/getNotbookWithStats", getNotbookWithStats);
+
+notebookRouter.delete("/deleteNotebook/:notebookId", deleteNotebook);
 
 export default notebookRouter;

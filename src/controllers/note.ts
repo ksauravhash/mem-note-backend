@@ -79,7 +79,7 @@ export const getTodaysNote = async (req: Request, res: Response) => {
         if (notebookID) {
             const notebook = await Notebook.findById(notebookID);
             if (notebook) {
-                const nbs = (await Note.find({ previouslyUsed: false, userId: req.user?.id, noteId: notebook.id as string })).filter(note=> {
+                const nbs = (await Note.find({ previouslyUsed: false, userId: req.user?.id, noteId: notebook.id as string })).filter(note => {
                     const now = new Date();
                     if (!note.usedDate)
                         return false;
@@ -176,6 +176,54 @@ export const iterateNote = async (req: Request, res: Response) => {
             return;
         }
         res.status(500).send();
+        console.error(
+            `${new Date().toTimeString()} ${new Date().toDateString()}`,
+            err
+        );
+    }
+}
+
+const noteBlockSchema = z.object({
+    type: z.enum(["word", "description", "image", "audio"]),
+    content: z.string().min(1, "Content cannot be empty"),
+    sequenceNumber: z.number().int().positive("Must be a positive integer"),
+    answer: z.boolean()
+});
+
+const updateNoteSchema = z.object({
+    title: z.string().optional(),
+    noteBlocks: z.array(noteBlockSchema).optional(),
+    noteId: z.string().nonempty()
+});
+
+
+export const updateNote = async (req: Request, res: Response) => {
+    try {
+        const data = req.body;
+        const dataValidationOb = await updateNoteSchema.safeParseAsync(data);
+        if (dataValidationOb.success) {
+            const { title, noteBlocks, noteId } = dataValidationOb.data;
+            const note = await Note.findOne({ _id: noteId, userId: req.user?.id });
+            if (note) {
+                if (title) {
+                    note.title = title;
+                }
+
+                if(noteBlocks && Array.isArray(noteBlocks)) {
+                    //@ts-ignore
+                    note.noteBlocks = noteBlocks;
+                }
+
+                await note.save();
+                res.sendStatus(204);
+            } else {
+                res.sendStatus(400);
+            }
+        } else {
+            res.status(400).json(dataValidationOb.error);
+        }
+    } catch (err) {
+        res.sendStatus(500);
         console.error(
             `${new Date().toTimeString()} ${new Date().toDateString()}`,
             err

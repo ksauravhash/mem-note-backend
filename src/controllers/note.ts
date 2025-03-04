@@ -186,7 +186,7 @@ export const iterateNote = async (req: Request, res: Response) => {
 const noteBlockSchema = z.object({
     type: z.enum(["word", "description", "image", "audio"]),
     content: z.string().min(1, "Content cannot be empty"),
-    sequenceNumber: z.number().int().positive("Must be a positive integer"),
+    sequenceNumber: z.number().int().gte(0, 'Must be a natural number'),
     answer: z.boolean()
 });
 
@@ -251,7 +251,7 @@ export const getNoteById = async (req: Request, res: Response) => {
     }
 }
 
-const pageLimit = 30;
+const pageLimit = 15;
 
 export const getNotes = async (req: Request, res: Response) => {
     try {

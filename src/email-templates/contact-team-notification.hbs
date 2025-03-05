@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Message Received</title>
+    <style>
+        body {
+            font-family: Nunito, sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #2b2b2b;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            color: #00bfff;
+        }
+        .content {
+            margin-bottom: 20px;
+            color: #e0e0e0; /* Brighter text for readability */
+        }
+        .content p {
+            margin: 5px 0;
+        }
+        .label {
+            color: #bbbbbb; /* Brighter labels for readability */
+        }
+        .message-box {
+            background-color: #333;
+            padding: 10px;
+            border-left: 5px solid #00bfff;
+            margin-top: 10px;
+            border-radius: 5px;
+            color: #f0f0f0; /* Bright text for the message box */
+        }
+        .message-id {
+            color: #00bfff; /* Highlighted ID */
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #cccccc; /* Brighter footer text */
+        }
+        a {
+            color: #00bfff;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Received a New Message</h2>
+        </div>
+        <div class="content">
+            <p class="label"><strong>Name:</strong> <span style="color: #f0f0f0;">{{name}}</span></p>
+            <p class="label"><strong>Email:</strong> <a href="mailto:{{email}}">{{email}}</a></p>
+            <p class="label"><strong>Message:</strong></p>
+            <div class="message-box">
+                <p>{{message}}</p>
+            </div>
+            <p class="label"><strong>Message ID:</strong> <span class="message-id">{{id}}</span></p>
+        </div>
+        <div class="footer">
+            <p>This is an automated email sent by the MemNote contact form.</p>
+        </div>
+    </div>
+</body>
+
+</html>

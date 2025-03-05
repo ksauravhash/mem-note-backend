@@ -5,6 +5,7 @@ import { connectDB } from "./db";
 import userRouter from "./routes/user";
 import notebookRouter from "./routes/notebook";
 import noteRouter from "./routes/note";
+import contactRouter from "./routes/contact";
 
 config();
 
@@ -27,6 +28,8 @@ app.use('/user',userRouter);
 app.use('/notebook', notebookRouter);
 
 app.use('/note', noteRouter);
+
+app.use('/contact', contactRouter);
 
 app.get("/test", (req: Request, res: Response) => {
   res.json({ success: 200 });

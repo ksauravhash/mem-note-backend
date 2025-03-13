@@ -5,6 +5,7 @@ import RecentNotebook from "../models/RecentNotebooks";
 import { Types } from "mongoose";
 import mongoose from "mongoose";
 import Note from "../models/Note";
+import { Errors, Reader } from 'mynt-handler';
 
 const notebookDataSchema = z.object({
   title: z.string().nonempty(),
@@ -189,6 +190,44 @@ export const getNotbookWithStats = async (req: Request, res: Response) => {
     );
   }
 };
+
+export const uploadNotebookFile = async (req: Request, res: Response) => {
+  try {
+    if (!req.file || !req.file.buffer) {
+      res.sendStatus(400);
+      return;
+    }
+    const file = await Reader.readMyntFileFromBufferV2(req.file?.buffer);
+    const notebook = new Notebook({
+      title: file.notebook.title,
+      user: req.user?.id
+    });
+    const notes = file.notebook.notes.map(note => ({ ...note, noteId: notebook._id, userId: req.user?.id }));
+
+    let nb = await RecentNotebook.findOne({ user: req.user?.id });
+    if (!nb) {
+      nb = new RecentNotebook({ user: req.user?.id });
+    }
+    nb.notebooks.push({
+      id: notebook._id as Types.ObjectId,
+      lastAccessed: new Date()
+    })
+    await Promise.all([Note.insertMany(notes), notebook.save(), nb.save()])
+    res.json({ id: notebook._id });
+
+  } catch (err) {
+    if (err instanceof Errors.MyntParsingError) {
+      res.status(400).json({ error: 'Invalid File.' });
+    } else if (err instanceof Errors.MyntFileError) {
+      res.status(400).json({ error: 'File is corrupt.' });
+    } else
+      res.sendStatus(500);
+    console.error(
+      `${new Date().toTimeString()} ${new Date().toDateString()}`,
+      err
+    );
+  }
+}
 
 export const deleteNotebook = async (req: Request, res: Response) => {
   try {

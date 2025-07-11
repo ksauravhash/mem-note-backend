@@ -215,7 +215,7 @@ export const googleLogin = (req: Request, res: Response) => {
   try {
     const isProduction = process.env.NODE_ENV === "production" || process.env.RAILWAY_ENVIRONMENT === "production"
     const redirectUrl = `${isProduction ? 'https' : 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
-    const authURL = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.CLIENT_ID2}&redirect_uri=${redirectUrl}&response_type=code&scope=email profile&access_type=offline`;
+    const authURL = `https://accounts.google.com/o/oauth2/auth?client_id=${process.env.CLIENT_ID}&redirect_uri=${redirectUrl}&response_type=code&scope=email profile&access_type=offline`;
     res.redirect(authURL);
   } catch (err) {
     res.status(500).send();
@@ -233,8 +233,8 @@ export const googleLoginRedirect = async (req: Request, res: Response) => {
     const isProduction = process.env.NODE_ENV === "production" || process.env.RAILWAY_ENVIRONMENT === "production"
     const oauth2Client = new google.auth.OAuth2(
       {
-        clientId: process.env.CLIENT_ID2,
-        clientSecret: process.env.CLIENT_SECRET2,
+        clientId: process.env.CLIENT_ID,
+        clientSecret: process.env.CLIENT_SECRET,
         redirectUri: `${isProduction ? 'https' : 'http'}://${req.get('host')}/${process.env.REDIRECT_LINK_2}`
       }
     );
